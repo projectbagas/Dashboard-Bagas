@@ -56,17 +56,48 @@ menu = st.sidebar.radio(
 if menu == "Overview":
     st.title("📊 Overview Analisis Sentimen")
 
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric("Total Ulasan Dianalisis", f"{len(df)} Data")
+    # Hitung distribusi sentimen
+    sentiment_counts = df["sentimen"].value_counts()
 
-    with col2:
-        sentiment_counts = df["sentimen"].value_counts()
+    # ================= KPI METRICS =================
+    col1, col2, col3, col4 = st.columns(4)
+
+    col1.metric("Total Ulasan", len(df))
+    col2.metric("😊 Puas", sentiment_counts.get("Puas", 0))
+    col3.metric("😐 Netral", sentiment_counts.get("Netral", 0))
+    col4.metric("😠 Tidak Puas", sentiment_counts.get("Tidak Puas", 0))
+
+    st.markdown("---")
+
+    # ================= PIE CHART =================
+    col1, col2 = st.columns(2)
+
+    with col1:
         fig, ax = plt.subplots()
-        ax.pie(sentiment_counts, labels=sentiment_counts.index,
-               autopct="%1.1f%%", startangle=90)
+        ax.pie(
+            sentiment_counts,
+            labels=sentiment_counts.index,
+            autopct="%1.1f%%",
+            startangle=90
+        )
+        ax.set_title("Distribusi Sentimen Ulasan Pengguna")
         ax.axis("equal")
         st.pyplot(fig)
+
+    # ================= NARASI =================
+    with col2:
+        st.markdown("""
+        **Halaman Overview** menyajikan gambaran umum hasil analisis sentimen
+        terhadap ulasan pengguna aplikasi Maxim. Informasi yang ditampilkan
+        meliputi total jumlah ulasan serta distribusi tingkat kepuasan pengguna
+        yang terbagi ke dalam kategori Puas, Netral, dan Tidak Puas.
+        """)
+
+    st.markdown("---")
+
+    # ================= BAR CHART =================
+    st.subheader("Jumlah Ulasan per Kategori Sentimen")
+    st.bar_chart(sentiment_counts)
 
 # =====================================================
 # HALAMAN PERFORMA MODEL
@@ -244,3 +275,4 @@ st.markdown(
     "<center>Dashboard Analisis Sentimen | Skripsi | 2026</center>",
     unsafe_allow_html=True
 )
+
