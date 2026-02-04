@@ -51,6 +51,52 @@ menu = st.sidebar.radio(
     ]
 )
 # =====================================================
+# HALAMAN DATA ULASAN
+# =====================================================
+elif menu == "Data Ulasan":
+    st.title("📋 Data Ulasan Terklasifikasi")
+    ...
+    
+# =====================================================
+# HALAMAN KLASIFIKASI ULASAN BARU
+# =====================================================
+elif menu == "Klasifikasi Ulasan Baru":
+    st.title("🧠 Klasifikasi Ulasan Baru")
+
+    st.markdown(
+        "Fitur ini digunakan untuk mengklasifikasikan ulasan baru "
+        "ke dalam kategori Puas, Netral, atau Tidak Puas."
+    )
+
+    model_choice = st.selectbox(
+        "Pilih Model Klasifikasi:",
+        ["XGBoost", "Random Forest"]
+    )
+
+    user_review = st.text_area(
+        "Masukkan Teks Ulasan Pengguna:"
+    )
+
+    if st.button("🔍 Klasifikasikan"):
+        if user_review.strip() == "":
+            st.warning("Silakan masukkan teks ulasan terlebih dahulu.")
+        else:
+            review_tfidf = vectorizer.transform([user_review])
+
+            if model_choice == "XGBoost":
+                prediction = model_xgb.predict(review_tfidf)[0]
+            else:
+                prediction = model_rf.predict(review_tfidf)[0]
+
+            label_map = {
+                2: "Puas",
+                1: "Netral",
+                0: "Tidak Puas"
+            }
+
+            st.success(f"Hasil Klasifikasi: **{label_map[prediction]}**")
+
+# =====================================================
 # HALAMAN OVERVIEW
 # =====================================================
 if menu == "Overview":
@@ -316,6 +362,7 @@ elif menu == "Klasifikasi Ulasan Baru":
             st.success(
                 f"Hasil Klasifikasi: **{label_map[prediction]}**"
             )
+
 
 
 
