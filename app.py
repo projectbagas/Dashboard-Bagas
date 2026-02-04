@@ -71,6 +71,22 @@ if menu == "Overview":
         ax.axis("equal")
         st.pyplot(fig)
 
+    # =========================
+    # TABEL CONFUSION MATRIX
+    # =========================
+    st.subheader("Tabel Confusion Matrix")
+
+    cm_df = pd.DataFrame(
+        cm,
+        index=label_names,
+        columns=label_names
+    )
+
+    st.dataframe(
+        cm_df,
+        use_container_width=True
+    )
+
 # =====================================================
 # HALAMAN PERFORMA MODEL
 # =====================================================
@@ -185,4 +201,5 @@ st.markdown(
     "<center>Dashboard Analisis Sentimen | Skripsi | 2026</center>",
     unsafe_allow_html=True
 )
+
 
