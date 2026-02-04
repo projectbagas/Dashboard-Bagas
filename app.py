@@ -6,6 +6,7 @@ import joblib
 
 from wordcloud import WordCloud
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import classification_report
 
 # =====================================================
 # KONFIGURASI HALAMAN
@@ -133,6 +134,26 @@ elif menu == "Confusion Matrix":
     cm_df = pd.DataFrame(cm, index=label_names, columns=label_names)
     st.dataframe(cm_df, use_container_width=True)
 
+    # =========================
+    # TABEL METRIK EVALUASI
+    # =========================
+    st.subheader("Tabel Evaluasi Model")
+
+    report = classification_report(
+        y_true,
+        y_pred,
+        target_names=label_names,
+        output_dict=True
+    )
+
+    report_df = pd.DataFrame(report).transpose()
+
+    report_df = report_df.loc[label_names, ["precision", "recall", "f1-score"]]
+
+    st.dataframe(
+        report_df.style.format("{:.3f}"),
+        use_container_width=True
+    )
 
 # =====================================================
 # HALAMAN WORD CLOUD
@@ -190,4 +211,5 @@ st.markdown(
     "<center>Dashboard Analisis Sentimen | Skripsi | 2026</center>",
     unsafe_allow_html=True
 )
+
 
