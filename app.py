@@ -6,7 +6,6 @@ import joblib
 
 from wordcloud import WordCloud
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-from sklearn.metrics import classification_report
 from sklearn.metrics import classification_report, accuracy_score
 
 # =====================================================
@@ -47,54 +46,9 @@ menu = st.sidebar.radio(
         "Confusion Matrix",
         "Word Cloud",
         "Data Ulasan",
-        "Klasifikasi Ulasan Baru"   # 👈 TAMBAH INI
+        "Klasifikasi Ulasan Baru"
     ]
 )
-# =====================================================
-# HALAMAN DATA ULASAN
-# =====================================================
-elif menu == "Data Ulasan":
-    st.title("📋 Data Ulasan Terklasifikasi")
-    ...
-    
-# =====================================================
-# HALAMAN KLASIFIKASI ULASAN BARU
-# =====================================================
-elif menu == "Klasifikasi Ulasan Baru":
-    st.title("🧠 Klasifikasi Ulasan Baru")
-
-    st.markdown(
-        "Fitur ini digunakan untuk mengklasifikasikan ulasan baru "
-        "ke dalam kategori Puas, Netral, atau Tidak Puas."
-    )
-
-    model_choice = st.selectbox(
-        "Pilih Model Klasifikasi:",
-        ["XGBoost", "Random Forest"]
-    )
-
-    user_review = st.text_area(
-        "Masukkan Teks Ulasan Pengguna:"
-    )
-
-    if st.button("🔍 Klasifikasikan"):
-        if user_review.strip() == "":
-            st.warning("Silakan masukkan teks ulasan terlebih dahulu.")
-        else:
-            review_tfidf = vectorizer.transform([user_review])
-
-            if model_choice == "XGBoost":
-                prediction = model_xgb.predict(review_tfidf)[0]
-            else:
-                prediction = model_rf.predict(review_tfidf)[0]
-
-            label_map = {
-                2: "Puas",
-                1: "Netral",
-                0: "Tidak Puas"
-            }
-
-            st.success(f"Hasil Klasifikasi: **{label_map[prediction]}**")
 
 # =====================================================
 # HALAMAN OVERVIEW
@@ -103,19 +57,14 @@ if menu == "Overview":
     st.title("📊 Overview Analisis Sentimen")
 
     col1, col2 = st.columns(2)
-
     with col1:
         st.metric("Total Ulasan Dianalisis", f"{len(df)} Data")
 
     with col2:
         sentiment_counts = df["sentimen"].value_counts()
         fig, ax = plt.subplots()
-        ax.pie(
-            sentiment_counts,
-            labels=sentiment_counts.index,
-            autopct="%1.1f%%",
-            startangle=90
-        )
+        ax.pie(sentiment_counts, labels=sentiment_counts.index,
+               autopct="%1.1f%%", startangle=90)
         ax.axis("equal")
         st.pyplot(fig)
 
@@ -159,10 +108,11 @@ elif menu == "Confusion Matrix":
     y_true = df["sentimen_encoded"]
     X_tfidf = vectorizer.transform(df["content"].astype(str))
 
-    if model_choice == "XGBoost":
-        y_pred = model_xgb.predict(X_tfidf)
-    else:
-        y_pred = model_rf.predict(X_tfidf)
+    y_pred = (
+        model_xgb.predict(X_tfidf)
+        if model_choice == "XGBoost"
+        else model_rf.predict(X_tfidf)
+    )
 
     labels = [2, 1, 0]
     label_names = ["Puas", "Netral", "Tidak Puas"]
@@ -170,10 +120,7 @@ elif menu == "Confusion Matrix":
     cm = confusion_matrix(y_true, y_pred, labels=labels)
 
     fig, ax = plt.subplots()
-    disp = ConfusionMatrixDisplay(
-        confusion_matrix=cm,
-        display_labels=label_names
-    )
+    disp = ConfusionMatrixDisplay(cm, display_labels=label_names)
     disp.plot(ax=ax, cmap="Blues", values_format="d")
     st.pyplot(fig)
 
@@ -181,82 +128,35 @@ elif menu == "Confusion Matrix":
     cm_df = pd.DataFrame(cm, index=label_names, columns=label_names)
     st.dataframe(cm_df, use_container_width=True)
 
-    # =========================
-    # TABEL METRIK EVALUASI
-    # =========================
-    st.subheader("Tabel Evaluasi Model")
-
+    st.subheader("Evaluasi Model")
     report = classification_report(
-        y_true,
-        y_pred,
-        target_names=label_names,
-        output_dict=True
+        y_true, y_pred, target_names=label_names, output_dict=True
     )
-
     report_df = pd.DataFrame(report).transpose()
+    st.dataframe(report_df.round(3), use_container_width=True)
 
-    report_df = report_df.loc[label_names, ["precision", "recall", "f1-score"]]
+    st.subheader("Perbandingan XGBoost vs Random Forest")
 
-    st.dataframe(
-        report_df.style.format("{:.3f}"),
-        use_container_width=True
-    )
-
-    # =========================
-    # TABEL PERBANDINGAN MODEL
-    # =========================
-    st.subheader("Perbandingan Performa XGBoost vs Random Forest")
-
-    # Prediksi kedua model
     y_pred_xgb = model_xgb.predict(X_tfidf)
     y_pred_rf = model_rf.predict(X_tfidf)
 
-    # Accuracy
-    acc_xgb = accuracy_score(y_true, y_pred_xgb)
-    acc_rf = accuracy_score(y_true, y_pred_rf)
-
-    # Classification report
-    report_xgb = classification_report(
-        y_true, y_pred_xgb, output_dict=True
-    )
-    report_rf = classification_report(
-        y_true, y_pred_rf, output_dict=True
-    )
-
     comparison_df = pd.DataFrame({
         "Model": ["XGBoost", "Random Forest"],
-        "Akurasi": [acc_xgb, acc_rf],
-        "Presisi (Macro)": [
-            report_xgb["macro avg"]["precision"],
-            report_rf["macro avg"]["precision"]
+        "Akurasi": [
+            accuracy_score(y_true, y_pred_xgb),
+            accuracy_score(y_true, y_pred_rf)
         ],
-        "Recall (Macro)": [
-            report_xgb["macro avg"]["recall"],
-            report_rf["macro avg"]["recall"]
+        "F1 Macro": [
+            classification_report(y_true, y_pred_xgb, output_dict=True)["macro avg"]["f1-score"],
+            classification_report(y_true, y_pred_rf, output_dict=True)["macro avg"]["f1-score"]
         ],
-        "F1-Score (Macro)": [
-            report_xgb["macro avg"]["f1-score"],
-            report_rf["macro avg"]["f1-score"]
-        ],
-        "Presisi (Weighted)": [
-            report_xgb["weighted avg"]["precision"],
-            report_rf["weighted avg"]["precision"]
-        ],
-        "Recall (Weighted)": [
-            report_xgb["weighted avg"]["recall"],
-            report_rf["weighted avg"]["recall"]
-        ],
-        "F1-Score (Weighted)": [
-            report_xgb["weighted avg"]["f1-score"],
-            report_rf["weighted avg"]["f1-score"]
+        "F1 Weighted": [
+            classification_report(y_true, y_pred_xgb, output_dict=True)["weighted avg"]["f1-score"],
+            classification_report(y_true, y_pred_rf, output_dict=True)["weighted avg"]["f1-score"]
         ],
     })
 
-    st.dataframe(
-    comparison_df.round(3),
-    use_container_width=True
-)
-
+    st.dataframe(comparison_df.round(3), use_container_width=True)
 
 # =====================================================
 # HALAMAN WORD CLOUD
@@ -274,11 +174,8 @@ elif menu == "Word Cloud":
     )
 
     if text_data.strip():
-        wc = WordCloud(
-            width=800,
-            height=400,
-            background_color="white"
-        ).generate(text_data)
+        wc = WordCloud(width=800, height=400, background_color="white")
+        wc.generate(text_data)
 
         fig, ax = plt.subplots(figsize=(10, 5))
         ax.imshow(wc, interpolation="bilinear")
@@ -296,15 +193,48 @@ elif menu == "Data Ulasan":
         ["Semua"] + list(df["sentimen"].unique())
     )
 
-    if filter_sentiment != "Semua":
-        df_show = df[df["sentimen"] == filter_sentiment]
-    else:
-        df_show = df
+    df_show = df if filter_sentiment == "Semua" else df[df["sentimen"] == filter_sentiment]
 
     st.dataframe(
         df_show[["content", "score", "sentimen"]],
         use_container_width=True
     )
+
+# =====================================================
+# HALAMAN KLASIFIKASI ULASAN BARU
+# =====================================================
+elif menu == "Klasifikasi Ulasan Baru":
+    st.title("🧠 Klasifikasi Ulasan Baru")
+
+    st.markdown(
+        "Fitur ini digunakan untuk mengklasifikasikan ulasan baru "
+        "ke dalam kategori **Puas, Netral, atau Tidak Puas**."
+    )
+
+    model_choice = st.selectbox(
+        "Pilih Model:",
+        ["XGBoost", "Random Forest"]
+    )
+
+    user_review = st.text_area(
+        "Masukkan Teks Ulasan:",
+        placeholder="Contoh: Driver ramah dan aplikasi mudah digunakan"
+    )
+
+    if st.button("🔍 Klasifikasikan"):
+        if user_review.strip() == "":
+            st.warning("Masukkan teks ulasan terlebih dahulu.")
+        else:
+            review_tfidf = vectorizer.transform([user_review])
+
+            prediction = (
+                model_xgb.predict(review_tfidf)[0]
+                if model_choice == "XGBoost"
+                else model_rf.predict(review_tfidf)[0]
+            )
+
+            label_map = {2: "Puas 😊", 1: "Netral 😐", 0: "Tidak Puas 😠"}
+            st.success(f"Hasil Klasifikasi: **{label_map[prediction]}**")
 
 # =====================================================
 # FOOTER
@@ -314,56 +244,3 @@ st.markdown(
     "<center>Dashboard Analisis Sentimen | Skripsi | 2026</center>",
     unsafe_allow_html=True
 )
-
-# =====================================================
-# HALAMAN KLASIFIKASI ULASAN BARU
-# =====================================================
-elif menu == "Klasifikasi Ulasan Baru":
-    st.title("🧠 Klasifikasi Ulasan Baru")
-
-    st.markdown(
-        "Fitur ini digunakan untuk mengklasifikasikan **ulasan baru pengguna** "
-        "ke dalam kategori **Puas, Netral, atau Tidak Puas** menggunakan "
-        "model machine learning yang telah dilatih."
-    )
-
-    # Pilih model
-    model_choice = st.selectbox(
-        "Pilih Model Klasifikasi:",
-        ["XGBoost", "Random Forest"]
-    )
-
-    # Input teks ulasan
-    user_review = st.text_area(
-        "Masukkan Teks Ulasan Pengguna:",
-        placeholder="Contoh: Driver ramah, aplikasi mudah digunakan, harga terjangkau"
-    )
-
-    if st.button("🔍 Klasifikasikan"):
-        if user_review.strip() == "":
-            st.warning("Silakan masukkan teks ulasan terlebih dahulu.")
-        else:
-            # Transform teks
-            review_tfidf = vectorizer.transform([user_review])
-
-            # Prediksi
-            if model_choice == "XGBoost":
-                prediction = model_xgb.predict(review_tfidf)[0]
-            else:
-                prediction = model_rf.predict(review_tfidf)[0]
-
-            # Mapping label
-            label_map = {
-                2: "Puas 😊",
-                1: "Netral 😐",
-                0: "Tidak Puas 😠"
-            }
-
-            st.success(
-                f"Hasil Klasifikasi: **{label_map[prediction]}**"
-            )
-
-
-
-
-
