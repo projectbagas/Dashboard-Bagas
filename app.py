@@ -7,6 +7,7 @@ import joblib
 from wordcloud import WordCloud
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, accuracy_score
 
 # =====================================================
 # KONFIGURASI HALAMAN
@@ -155,6 +156,61 @@ elif menu == "Confusion Matrix":
         use_container_width=True
     )
 
+    # =========================
+    # TABEL PERBANDINGAN MODEL
+    # =========================
+    st.subheader("Perbandingan Performa XGBoost vs Random Forest")
+
+    # Prediksi kedua model
+    y_pred_xgb = model_xgb.predict(X_tfidf)
+    y_pred_rf = model_rf.predict(X_tfidf)
+
+    # Accuracy
+    acc_xgb = accuracy_score(y_true, y_pred_xgb)
+    acc_rf = accuracy_score(y_true, y_pred_rf)
+
+    # Classification report
+    report_xgb = classification_report(
+        y_true, y_pred_xgb, output_dict=True
+    )
+    report_rf = classification_report(
+        y_true, y_pred_rf, output_dict=True
+    )
+
+    comparison_df = pd.DataFrame({
+        "Model": ["XGBoost", "Random Forest"],
+        "Akurasi": [acc_xgb, acc_rf],
+        "Presisi (Macro)": [
+            report_xgb["macro avg"]["precision"],
+            report_rf["macro avg"]["precision"]
+        ],
+        "Recall (Macro)": [
+            report_xgb["macro avg"]["recall"],
+            report_rf["macro avg"]["recall"]
+        ],
+        "F1-Score (Macro)": [
+            report_xgb["macro avg"]["f1-score"],
+            report_rf["macro avg"]["f1-score"]
+        ],
+        "Presisi (Weighted)": [
+            report_xgb["weighted avg"]["precision"],
+            report_rf["weighted avg"]["precision"]
+        ],
+        "Recall (Weighted)": [
+            report_xgb["weighted avg"]["recall"],
+            report_rf["weighted avg"]["recall"]
+        ],
+        "F1-Score (Weighted)": [
+            report_xgb["weighted avg"]["f1-score"],
+            report_rf["weighted avg"]["f1-score"]
+        ],
+    })
+
+    st.dataframe(
+        comparison_df.style.format("{:.3f}"),
+        use_container_width=True
+    )
+
 # =====================================================
 # HALAMAN WORD CLOUD
 # =====================================================
@@ -211,5 +267,6 @@ st.markdown(
     "<center>Dashboard Analisis Sentimen | Skripsi | 2026</center>",
     unsafe_allow_html=True
 )
+
 
 
