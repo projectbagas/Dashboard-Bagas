@@ -35,7 +35,7 @@ vectorizer, model_xgb, model_rf = load_models()
 # =====================================================
 # SIDEBAR NAVIGASI
 # =====================================================
-st.sidebar.title("📌 Navigasi Dashboard")
+st.sidebar.title("📌 Menu Dashboard")
 
 menu = st.sidebar.radio(
     "Pilih Halaman:",
@@ -185,3 +185,4 @@ st.markdown(
     "<center>Dashboard Analisis Sentimen | Skripsi | 2026</center>",
     unsafe_allow_html=True
 )
+
