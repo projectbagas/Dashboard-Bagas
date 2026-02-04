@@ -15,6 +15,14 @@ st.set_page_config(
     layout="wide"
 )
 
+st.markdown("""
+<style>
+[data-testid="stSidebar"] {
+    background-color: #1c1f26;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # =====================================================
 # LOAD DATA & MODEL
 # =====================================================
@@ -185,3 +193,4 @@ st.markdown(
     "<center>Dashboard Analisis Sentimen | Skripsi | 2026</center>",
     unsafe_allow_html=True
 )
+
