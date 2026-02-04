@@ -129,43 +129,6 @@ elif menu == "Confusion Matrix":
     disp.plot(ax=ax, cmap="Blues", values_format="d")
     st.pyplot(fig)
 
-    st.subheader("Tabel Confusion Matrix")
-    cm_df = pd.DataFrame(cm, index=label_names, columns=label_names)
-    st.dataframe(cm_df, use_container_width=True)
-
-# =====================================================
-# HALAMAN WORD CLOUD
-# =====================================================
-elif menu == "Word Cloud":
-    st.title("☁️ Word Cloud Berdasarkan Sentimen")
-    ...
-
-# =====================================================
-# HALAMAN PERFORMA MODEL
-# =====================================================
-elif menu == "Performa Model":
-    st.title("📊 Perbandingan Performa Model")
-
-    model_metrics = pd.DataFrame({
-        "Model": ["XGBoost", "Random Forest"],
-        "Akurasi": [0.87, 0.84],
-        "Presisi": [0.86, 0.83],
-        "Recall": [0.85, 0.82],
-        "F1-Score": [0.85, 0.82]
-    })
-
-    metric = st.selectbox(
-        "Pilih Metrik Evaluasi:",
-        ["Akurasi", "Presisi", "Recall", "F1-Score"]
-    )
-
-    fig, ax = plt.subplots()
-    ax.bar(model_metrics["Model"], model_metrics[metric])
-    ax.set_ylim(0, 1)
-    ax.set_ylabel(metric)
-    ax.set_title(f"Perbandingan {metric}")
-    st.pyplot(fig)
-
 # =====================================================
 # HALAMAN WORD CLOUD
 # =====================================================
@@ -222,8 +185,3 @@ st.markdown(
     "<center>Dashboard Analisis Sentimen | Skripsi | 2026</center>",
     unsafe_allow_html=True
 )
-
-
-
-
-
