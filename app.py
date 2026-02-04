@@ -51,7 +51,7 @@ menu = st.sidebar.radio(
 )
 
 # =====================================================
-# HALAMAN OVERVIEW (Compact)
+# HALAMAN OVERVIEW (Super Compact)
 # =====================================================
 if menu == "Overview":
     st.title("📊 Overview Analisis Sentimen")
@@ -62,40 +62,7 @@ if menu == "Overview":
     # ================= KPI METRICS =================
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Total Ulasan", len(df))
-    col2.metric("😊 Puas", sentiment_counts.get("Puas", 0))
-    col3.metric("😐 Netral", sentiment_counts.get("Netral", 0))
-    col4.metric("😠 Tidak Puas", sentiment_counts.get("Tidak Puas", 0))
-
-    st.markdown("---")
-
-    # ================= PIE CHART + NARASI =================
-    col1, col2 = st.columns([2, 1])  # Pie chart lebih besar, narasi lebih kecil
-    with col1:
-        fig, ax = plt.subplots(figsize=(4, 4))  # Ukuran compact
-        ax.pie(
-            sentiment_counts,
-            labels=sentiment_counts.index,
-            autopct="%1.1f%%",
-            startangle=90
-        )
-        ax.set_title("Distribusi Sentimen Ulasan")
-        ax.axis("equal")
-        st.pyplot(fig)
-
-    with col2:
-        st.markdown("""
-        **Gambaran Umum Analisis Sentimen**  
-        Menampilkan distribusi ulasan pengguna aplikasi Maxim berdasarkan kategori:
-        **Puas**, **Netral**, dan **Tidak Puas**.  
-        Informasi ini memudahkan pemahaman cepat kondisi data sebelum analisis lebih mendalam.
-        """)
-
-    st.markdown("---")
-
-    # ================= BAR CHART =================
-    st.subheader("Jumlah Ulasan per Kategori Sentimen")
-    st.bar_chart(sentiment_counts, height=200)  # Tinggi lebih kecil supaya compact
-
+    col2.metric("😊 Puas", sentiment_c_
 
 # =====================================================
 # HALAMAN PERFORMA MODEL
@@ -273,5 +240,6 @@ st.markdown(
     "<center>Dashboard Analisis Sentimen | Skripsi | 2026</center>",
     unsafe_allow_html=True
 )
+
 
 
