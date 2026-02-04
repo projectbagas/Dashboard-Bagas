@@ -46,10 +46,10 @@ menu = st.sidebar.radio(
         "Performa Model",
         "Confusion Matrix",
         "Word Cloud",
-        "Data Ulasan"
+        "Data Ulasan",
+        "Klasifikasi Ulasan Baru"   # 👈 TAMBAH INI
     ]
 )
-
 # =====================================================
 # HALAMAN OVERVIEW
 # =====================================================
@@ -268,6 +268,54 @@ st.markdown(
     "<center>Dashboard Analisis Sentimen | Skripsi | 2026</center>",
     unsafe_allow_html=True
 )
+
+# =====================================================
+# HALAMAN KLASIFIKASI ULASAN BARU
+# =====================================================
+elif menu == "Klasifikasi Ulasan Baru":
+    st.title("🧠 Klasifikasi Ulasan Baru")
+
+    st.markdown(
+        "Fitur ini digunakan untuk mengklasifikasikan **ulasan baru pengguna** "
+        "ke dalam kategori **Puas, Netral, atau Tidak Puas** menggunakan "
+        "model machine learning yang telah dilatih."
+    )
+
+    # Pilih model
+    model_choice = st.selectbox(
+        "Pilih Model Klasifikasi:",
+        ["XGBoost", "Random Forest"]
+    )
+
+    # Input teks ulasan
+    user_review = st.text_area(
+        "Masukkan Teks Ulasan Pengguna:",
+        placeholder="Contoh: Driver ramah, aplikasi mudah digunakan, harga terjangkau"
+    )
+
+    if st.button("🔍 Klasifikasikan"):
+        if user_review.strip() == "":
+            st.warning("Silakan masukkan teks ulasan terlebih dahulu.")
+        else:
+            # Transform teks
+            review_tfidf = vectorizer.transform([user_review])
+
+            # Prediksi
+            if model_choice == "XGBoost":
+                prediction = model_xgb.predict(review_tfidf)[0]
+            else:
+                prediction = model_rf.predict(review_tfidf)[0]
+
+            # Mapping label
+            label_map = {
+                2: "Puas 😊",
+                1: "Netral 😐",
+                0: "Tidak Puas 😠"
+            }
+
+            st.success(
+                f"Hasil Klasifikasi: **{label_map[prediction]}**"
+            )
 
 
 
