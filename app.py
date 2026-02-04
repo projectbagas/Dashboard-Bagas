@@ -207,9 +207,10 @@ elif menu == "Confusion Matrix":
     })
 
     st.dataframe(
-        comparison_df.style.format("{:.3f}"),
-        use_container_width=True
-    )
+    comparison_df.round(3),
+    use_container_width=True
+)
+
 
 # =====================================================
 # HALAMAN WORD CLOUD
@@ -267,6 +268,7 @@ st.markdown(
     "<center>Dashboard Analisis Sentimen | Skripsi | 2026</center>",
     unsafe_allow_html=True
 )
+
 
 
 
