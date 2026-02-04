@@ -16,15 +16,12 @@ st.set_page_config(
 )
 
 # =====================================================
-# LOAD DATA
+# LOAD DATA & MODEL
 # =====================================================
 @st.cache_data
 def load_data():
     return pd.read_csv("maxim_reviews_labeled.csv")
 
-# =====================================================
-# LOAD MODEL & VECTORIZER
-# =====================================================
 @st.cache_resource
 def load_models():
     vectorizer = joblib.load("tfidf_vectorizer.pkl")
@@ -36,148 +33,149 @@ df = load_data()
 vectorizer, model_xgb, model_rf = load_models()
 
 # =====================================================
-# JUDUL
+# SIDEBAR NAVIGASI
 # =====================================================
-st.title("📊 Dashboard Analisis Sentimen Ulasan Aplikasi Maxim")
-st.markdown(
-    """
-    Dashboard ini menyajikan hasil analisis sentimen ulasan pengguna aplikasi **Maxim**
-    menggunakan algoritma **XGBoost** dan **Random Forest**.
-    """
+st.sidebar.title("📌 Navigasi Dashboard")
+
+menu = st.sidebar.radio(
+    "Pilih Halaman:",
+    [
+        "Overview",
+        "Performa Model",
+        "Confusion Matrix",
+        "Word Cloud",
+        "Data Ulasan"
+    ]
 )
 
 # =====================================================
-# RINGKASAN STATISTIK
+# HALAMAN OVERVIEW
 # =====================================================
-st.header("📌 Ringkasan Statistik")
+if menu == "Overview":
+    st.title("📊 Overview Analisis Sentimen")
 
-col1, col2 = st.columns(2)
+    col1, col2 = st.columns(2)
 
-with col1:
-    st.metric("Total Ulasan Dianalisis", f"{len(df)} Data")
+    with col1:
+        st.metric("Total Ulasan Dianalisis", f"{len(df)} Data")
 
-with col2:
-    sentiment_counts = df["sentimen"].value_counts()
-    fig, ax = plt.subplots()
-    ax.pie(
-        sentiment_counts,
-        labels=sentiment_counts.index,
-        autopct="%1.1f%%",
-        startangle=90
+    with col2:
+        sentiment_counts = df["sentimen"].value_counts()
+        fig, ax = plt.subplots()
+        ax.pie(
+            sentiment_counts,
+            labels=sentiment_counts.index,
+            autopct="%1.1f%%",
+            startangle=90
+        )
+        ax.axis("equal")
+        st.pyplot(fig)
+
+# =====================================================
+# HALAMAN PERFORMA MODEL
+# =====================================================
+elif menu == "Performa Model":
+    st.title("📊 Perbandingan Performa Model")
+
+    model_metrics = pd.DataFrame({
+        "Model": ["XGBoost", "Random Forest"],
+        "Akurasi": [0.87, 0.84],
+        "Presisi": [0.86, 0.83],
+        "Recall": [0.85, 0.82],
+        "F1-Score": [0.85, 0.82]
+    })
+
+    metric = st.selectbox(
+        "Pilih Metrik Evaluasi:",
+        ["Akurasi", "Presisi", "Recall", "F1-Score"]
     )
-    ax.axis("equal")
+
+    fig, ax = plt.subplots()
+    ax.bar(model_metrics["Model"], model_metrics[metric])
+    ax.set_ylim(0, 1)
+    ax.set_ylabel(metric)
+    ax.set_title(f"Perbandingan {metric}")
     st.pyplot(fig)
 
 # =====================================================
-# PERBANDINGAN PERFORMA MODEL
+# HALAMAN CONFUSION MATRIX
 # =====================================================
-st.header("📊 Perbandingan Performa Model")
+elif menu == "Confusion Matrix":
+    st.title("📉 Confusion Matrix")
 
-# GANTI NILAI SESUAI HASIL PENELITIAN KAMU
-model_metrics = pd.DataFrame({
-    "Model": ["XGBoost", "Random Forest"],
-    "Akurasi": [0.87, 0.84],
-    "Presisi": [0.86, 0.83],
-    "Recall": [0.85, 0.82],
-    "F1-Score": [0.85, 0.82]
-})
+    model_choice = st.selectbox(
+        "Pilih Model:",
+        ["XGBoost", "Random Forest"]
+    )
 
-metric_option = st.selectbox(
-    "Pilih Metrik Evaluasi:",
-    ["Akurasi", "Presisi", "Recall", "F1-Score"]
-)
+    y_true = df["sentimen_encoded"]
+    X_tfidf = vectorizer.transform(df["content"].astype(str))
 
-fig, ax = plt.subplots()
-ax.bar(model_metrics["Model"], model_metrics[metric_option])
-ax.set_ylim(0, 1)
-ax.set_ylabel(metric_option)
-ax.set_title(f"Perbandingan {metric_option}")
-st.pyplot(fig)
+    if model_choice == "XGBoost":
+        y_pred = model_xgb.predict(X_tfidf)
+    else:
+        y_pred = model_rf.predict(X_tfidf)
 
-# =====================================================
-# CONFUSION MATRIX (REAL DARI MODEL)
-# =====================================================
-st.header("📉 Confusion Matrix")
+    labels = [2, 1, 0]
+    label_names = ["Puas", "Netral", "Tidak Puas"]
 
-model_choice = st.selectbox(
-    "Pilih Model untuk Confusion Matrix:",
-    ["XGBoost", "Random Forest"]
-)
+    cm = confusion_matrix(y_true, y_pred, labels=labels)
 
-# Label asli
-y_true = df["sentimen_encoded"]
-
-# Transform teks
-X_tfidf = vectorizer.transform(df["content"].astype(str))
-
-# Prediksi
-if model_choice == "XGBoost":
-    y_pred = model_xgb.predict(X_tfidf)
-else:
-    y_pred = model_rf.predict(X_tfidf)
-
-labels = [2, 1, 0]  # SESUAIKAN JIKA URUTAN LABEL BERBEDA
-label_names = ["Puas", "Netral", "Tidak Puas"]
-
-cm = confusion_matrix(y_true, y_pred, labels=labels)
-
-fig, ax = plt.subplots()
-disp = ConfusionMatrixDisplay(
-    confusion_matrix=cm,
-    display_labels=label_names
-)
-disp.plot(ax=ax, cmap="Blues", values_format="d")
-ax.set_title(f"Confusion Matrix {model_choice}")
-st.pyplot(fig)
-
-# =====================================================
-# WORD CLOUD
-# =====================================================
-st.header("☁️ Word Cloud Berdasarkan Sentimen")
-
-sentiment_option = st.selectbox(
-    "Pilih Sentimen:",
-    df["sentimen"].unique()
-)
-
-text_data = " ".join(
-    df[df["sentimen"] == sentiment_option]["content"].astype(str)
-)
-
-if text_data.strip() != "":
-    wordcloud = WordCloud(
-        width=800,
-        height=400,
-        background_color="white",
-        max_words=100
-    ).generate(text_data)
-
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.imshow(wordcloud, interpolation="bilinear")
-    ax.axis("off")
+    fig, ax = plt.subplots()
+    disp = ConfusionMatrixDisplay(
+        confusion_matrix=cm,
+        display_labels=label_names
+    )
+    disp.plot(ax=ax, cmap="Blues", values_format="d")
     st.pyplot(fig)
-else:
-    st.warning("Tidak ada data untuk sentimen ini.")
 
 # =====================================================
-# TABEL ULASAN TERKLASIFIKASI
+# HALAMAN WORD CLOUD
 # =====================================================
-st.header("📋 Daftar Ulasan Terklasifikasi")
+elif menu == "Word Cloud":
+    st.title("☁️ Word Cloud Berdasarkan Sentimen")
 
-filter_sentiment = st.selectbox(
-    "Filter Sentimen:",
-    ["Semua"] + list(df["sentimen"].unique())
-)
+    sentiment_option = st.selectbox(
+        "Pilih Sentimen:",
+        df["sentimen"].unique()
+    )
 
-if filter_sentiment != "Semua":
-    df_show = df[df["sentimen"] == filter_sentiment]
-else:
-    df_show = df
+    text_data = " ".join(
+        df[df["sentimen"] == sentiment_option]["content"].astype(str)
+    )
 
-st.dataframe(
-    df_show[["content", "score", "sentimen"]],
-    use_container_width=True
-)
+    if text_data.strip():
+        wc = WordCloud(
+            width=800,
+            height=400,
+            background_color="white"
+        ).generate(text_data)
+
+        fig, ax = plt.subplots(figsize=(10, 5))
+        ax.imshow(wc, interpolation="bilinear")
+        ax.axis("off")
+        st.pyplot(fig)
+
+# =====================================================
+# HALAMAN DATA ULASAN
+# =====================================================
+elif menu == "Data Ulasan":
+    st.title("📋 Data Ulasan Terklasifikasi")
+
+    filter_sentiment = st.selectbox(
+        "Filter Sentimen:",
+        ["Semua"] + list(df["sentimen"].unique())
+    )
+
+    if filter_sentiment != "Semua":
+        df_show = df[df["sentimen"] == filter_sentiment]
+    else:
+        df_show = df
+
+    st.dataframe(
+        df_show[["content", "score", "sentimen"]],
+        use_container_width=True
+    )
 
 # =====================================================
 # FOOTER
