@@ -167,38 +167,6 @@ elif menu == "Performa Model":
     st.pyplot(fig)
 
 # =====================================================
-# HALAMAN CONFUSION MATRIX
-# =====================================================
-elif menu == "Confusion Matrix":
-    st.title("📉 Confusion Matrix")
-
-    model_choice = st.selectbox(
-        "Pilih Model:",
-        ["XGBoost", "Random Forest"]
-    )
-
-    y_true = df["sentimen_encoded"]
-    X_tfidf = vectorizer.transform(df["content"].astype(str))
-
-    if model_choice == "XGBoost":
-        y_pred = model_xgb.predict(X_tfidf)
-    else:
-        y_pred = model_rf.predict(X_tfidf)
-
-    labels = [2, 1, 0]
-    label_names = ["Puas", "Netral", "Tidak Puas"]
-
-    cm = confusion_matrix(y_true, y_pred, labels=labels)
-
-    fig, ax = plt.subplots()
-    disp = ConfusionMatrixDisplay(
-        confusion_matrix=cm,
-        display_labels=label_names
-    )
-    disp.plot(ax=ax, cmap="Blues", values_format="d")
-    st.pyplot(fig)
-
-# =====================================================
 # HALAMAN WORD CLOUD
 # =====================================================
 elif menu == "Word Cloud":
@@ -254,6 +222,7 @@ st.markdown(
     "<center>Dashboard Analisis Sentimen | Skripsi | 2026</center>",
     unsafe_allow_html=True
 )
+
 
 
 
