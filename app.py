@@ -177,6 +177,7 @@ elif menu == "Confusion Matrix":
         ["XGBoost", "Random Forest"]
     )
 
+    # ================= PREDIKSI =================
     y_true = df["sentimen_encoded"]
     X_tfidf = vectorizer.transform(df["content"].astype(str))
 
@@ -191,44 +192,67 @@ elif menu == "Confusion Matrix":
 
     cm = confusion_matrix(y_true, y_pred, labels=labels)
 
-    fig, ax = plt.subplots()
-    disp = ConfusionMatrixDisplay(cm, display_labels=label_names)
-    disp.plot(ax=ax, cmap="Blues", values_format="d")
-    st.pyplot(fig)
+    # ================= LAYOUT 2 KOLOM =================
+    col1, col2 = st.columns([1, 1])
 
-    st.subheader("Tabel Confusion Matrix")
-    cm_df = pd.DataFrame(cm, index=label_names, columns=label_names)
-    st.dataframe(cm_df, use_container_width=True)
+    # ---------- CONFUSION MATRIX ----------
+    with col1:
+        st.subheader("Visual Confusion Matrix")
 
+        fig, ax = plt.subplots(figsize=(4, 4))
+        disp = ConfusionMatrixDisplay(
+            confusion_matrix=cm,
+            display_labels=label_names
+        )
+        disp.plot(
+            ax=ax,
+            cmap="Blues",
+            colorbar=False,
+            values_format="d"
+        )
+        ax.set_xlabel("Prediksi")
+        ax.set_ylabel("Aktual")
+        st.pyplot(fig)
+
+    # ---------- TABEL CONFUSION MATRIX ----------
+    with col2:
+        st.subheader("Tabel Confusion Matrix")
+
+        cm_df = pd.DataFrame(
+            cm,
+            index=label_names,
+            columns=label_names
+        )
+        st.dataframe(cm_df, use_container_width=True)
+
+    st.markdown("---")
+
+    # ================= EVALUASI MODEL =================
     st.subheader("Evaluasi Model")
+
     report = classification_report(
-        y_true, y_pred, target_names=label_names, output_dict=True
+        y_true,
+        y_pred,
+        target_names=label_names,
+        output_dict=True
     )
-    report_df = pd.DataFrame(report).transpose()
-    st.dataframe(report_df.round(3), use_container_width=True)
 
-    st.subheader("Perbandingan XGBoost vs Random Forest")
+    report_df = (
+        pd.DataFrame(report)
+        .transpose()
+        .round(3)
+    )
 
-    y_pred_xgb = model_xgb.predict(X_tfidf)
-    y_pred_rf = model_rf.predict(X_tfidf)
+    st.dataframe(report_df, use_container_width=True)
 
-    comparison_df = pd.DataFrame({
-        "Model": ["XGBoost", "Random Forest"],
-        "Akurasi": [
-            accuracy_score(y_true, y_pred_xgb),
-            accuracy_score(y_true, y_pred_rf)
-        ],
-        "F1 Macro": [
-            classification_report(y_true, y_pred_xgb, output_dict=True)["macro avg"]["f1-score"],
-            classification_report(y_true, y_pred_rf, output_dict=True)["macro avg"]["f1-score"]
-        ],
-        "F1 Weighted": [
-            classification_report(y_true, y_pred_xgb, output_dict=True)["weighted avg"]["f1-score"],
-            classification_report(y_true, y_pred_rf, output_dict=True)["weighted avg"]["f1-score"]
-        ],
-    })
-
-    st.dataframe(comparison_df.round(3), use_container_width=True)
+    # ================= NARASI =================
+    st.markdown("""
+    **Analisis Confusion Matrix**  
+    Confusion matrix menunjukkan kemampuan model dalam mengklasifikasikan
+    ulasan ke dalam kategori **Puas**, **Netral**, dan **Tidak Puas**.
+    Nilai pada diagonal utama merepresentasikan jumlah prediksi yang tepat,
+    sedangkan nilai di luar diagonal menunjukkan kesalahan klasifikasi.
+    """)
 
 # =====================================================
 # HALAMAN WORD CLOUD
@@ -316,6 +340,7 @@ st.markdown(
     "<center>Dashboard Analisis Sentimen | Skripsi | 2026</center>",
     unsafe_allow_html=True
 )
+
 
 
 
