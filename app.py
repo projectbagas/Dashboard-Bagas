@@ -56,7 +56,7 @@ menu = st.sidebar.radio(
 if menu == "Overview":
     st.title("📊 Overview Analisis Sentimen")
 
-    # Hitung distribusi sentimen
+    # ================= HITUNG DISTRIBUSI =================
     sentiment_counts = df["sentimen"].value_counts()
 
     # ================= KPI METRICS =================
@@ -68,37 +68,54 @@ if menu == "Overview":
 
     st.markdown("---")
 
-    # ================= PIE CHART + BAR CHART HORIZONTAL =================
+    # ================= VISUALISASI SEJAJAR =================
     col1, col2 = st.columns([1, 1])
 
-    # Pie chart dengan warna
+    # ---------- PIE CHART ----------
     with col1:
-        fig, ax = plt.subplots(figsize=(3, 3))
-        colors = ['#4CAF50', '#FFC107', '#F44336']  # Hijau, Kuning, Merah
-        ax.pie(
+        st.subheader("Distribusi Sentimen")
+
+        fig1, ax1 = plt.subplots(figsize=(4, 4))
+        colors = ["#1E88E5", "#FBC02D", "#E53935"]  # Biru, Kuning, Merah
+
+        ax1.pie(
             sentiment_counts,
             labels=sentiment_counts.index,
             autopct="%1.1f%%",
             startangle=90,
-            colors=colors
+            colors=colors,
+            textprops={"fontsize": 10}
         )
-        ax.set_title("Distribusi Sentimen")
-        ax.axis("equal")
-        st.pyplot(fig)
+        ax1.axis("equal")
+        st.pyplot(fig1)
 
-    # Bar chart horizontal
+    # ---------- BAR CHART ----------
     with col2:
         st.subheader("Jumlah Ulasan per Kategori")
-        st.bar_chart(sentiment_counts.sort_values(), height=150)  # Compact & ringkas
 
-    # ================= NARASI DI BAWAH =================
+        bar_df = sentiment_counts.reset_index()
+        bar_df.columns = ["Sentimen", "Jumlah"]
+
+        fig2, ax2 = plt.subplots(figsize=(4, 4))
+        ax2.bar(
+            bar_df["Sentimen"],
+            bar_df["Jumlah"]
+        )
+        ax2.set_ylabel("Jumlah Ulasan")
+        ax2.set_xlabel("Kategori Sentimen")
+
+        st.pyplot(fig2)
+
+    # ================= NARASI =================
     st.markdown("---")
     st.markdown("""
     **Gambaran Umum Analisis Sentimen**  
-    Halaman ini menampilkan ringkasan distribusi ulasan pengguna aplikasi Maxim 
-    berdasarkan kategori **Puas**, **Netral**, dan **Tidak Puas**. 
-    Visualisasi pie chart berwarna dan bar chart horizontal memudahkan pemahaman
-    cepat kondisi data secara profesional.
+    Halaman overview menyajikan ringkasan distribusi sentimen ulasan pengguna
+    aplikasi Maxim ke dalam tiga kategori, yaitu **Puas**, **Netral**, dan
+    **Tidak Puas**.  
+    Visualisasi pie chart menunjukkan proporsi masing-masing sentimen,
+    sedangkan bar chart menampilkan jumlah ulasan per kategori untuk
+    memudahkan analisis perbandingan.
     """)
 
 elif menu == "Performa Model":
@@ -299,6 +316,7 @@ st.markdown(
     "<center>Dashboard Analisis Sentimen | Skripsi | 2026</center>",
     unsafe_allow_html=True
 )
+
 
 
 
