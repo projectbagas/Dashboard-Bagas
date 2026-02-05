@@ -1,9 +1,8 @@
 [theme]
-base="light"
+base="dark"
 
-primaryColor="#1E88E5"            # Biru utama
-backgroundColor="#FFFFFF"         # Putih
-secondaryBackgroundColor="#F1F5F9" # Abu-biru lembut
-textColor="#0F172A"               # Biru gelap (nyaman dibaca)
-
+primaryColor="#1E88E5"        # Biru tua (button, highlight)
+backgroundColor="#0B132B"     # Biru tua gelap (background utama)
+secondaryBackgroundColor="#1C2541"  # Biru keabu (sidebar/card)
+textColor="#FFFFFF"           # Putih
 font="sans serif"
