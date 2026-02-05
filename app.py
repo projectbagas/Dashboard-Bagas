@@ -101,31 +101,53 @@ if menu == "Overview":
     cepat kondisi data secara profesional.
     """)
 
-# =====================================================
-# HALAMAN PERFORMA MODEL
-# =====================================================
 elif menu == "Performa Model":
     st.title("📊 Perbandingan Performa Model")
 
-    model_metrics = pd.DataFrame({
-        "Model": ["XGBoost", "Random Forest"],
-        "Akurasi": [0.87, 0.84],
-        "Presisi": [0.86, 0.83],
-        "Recall": [0.85, 0.82],
-        "F1-Score": [0.85, 0.82]
+    # ================= DATA METRIK MODEL =================
+    metrics = ["Accuracy", "Precision", "Recall", "F1-Score"]
+
+    xgboost_scores = [0.87, 0.86, 0.85, 0.85]
+    rf_scores = [0.84, 0.83, 0.82, 0.82]
+
+    x = np.arange(len(metrics))
+    width = 0.35
+
+    # ================= BAR CHART PERBANDINGAN =================
+    fig, ax = plt.subplots(figsize=(8, 4))
+
+    ax.bar(x - width/2, xgboost_scores, width, label="XGBoost")
+    ax.bar(x + width/2, rf_scores, width, label="Random Forest")
+
+    ax.set_ylabel("Score")
+    ax.set_title("Perbandingan Performa Model (XGBoost vs Random Forest)")
+    ax.set_xticks(x)
+    ax.set_xticklabels(metrics)
+    ax.set_ylim(0, 1)
+    ax.legend()
+
+    st.pyplot(fig)
+
+    # ================= TABEL RINGKAS =================
+    st.markdown("### 📋 Tabel Ringkasan Evaluasi Model")
+
+    perf_df = pd.DataFrame({
+        "Metric": metrics,
+        "XGBoost": xgboost_scores,
+        "Random Forest": rf_scores
     })
 
-    metric = st.selectbox(
-        "Pilih Metrik Evaluasi:",
-        ["Akurasi", "Presisi", "Recall", "F1-Score"]
-    )
+    st.dataframe(perf_df, use_container_width=True)
 
-    fig, ax = plt.subplots()
-    ax.bar(model_metrics["Model"], model_metrics[metric])
-    ax.set_ylim(0, 1)
-    ax.set_ylabel(metric)
-    ax.set_title(f"Perbandingan {metric}")
-    st.pyplot(fig)
+    # ================= NARASI =================
+    st.markdown("""
+    **Analisis Performa Model**  
+    Berdasarkan hasil evaluasi, model **XGBoost** menunjukkan performa yang
+    lebih unggul dibandingkan **Random Forest** pada seluruh metrik evaluasi,
+    yaitu Accuracy, Precision, Recall, dan F1-Score.  
+    Hal ini menunjukkan bahwa XGBoost lebih konsisten dalam mengklasifikasikan
+    sentimen ulasan pengguna.
+    """)
 
 # =====================================================
 # HALAMAN CONFUSION MATRIX
@@ -277,6 +299,7 @@ st.markdown(
     "<center>Dashboard Analisis Sentimen | Skripsi | 2026</center>",
     unsafe_allow_html=True
 )
+
 
 
 
