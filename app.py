@@ -21,7 +21,7 @@ st.set_page_config(
 # =====================================================
 @st.cache_data
 def load_data():
-    return pd.read_csv("maxim_reviews_labeled.csv")
+    return pd.read_csv("maxim_reviews_cleaned.csv")
 
 @st.cache_resource
 def load_models():
@@ -277,6 +277,7 @@ st.markdown(
     "<center>Dashboard Analisis Sentimen | Skripsi | 2026</center>",
     unsafe_allow_html=True
 )
+
 
 
 
