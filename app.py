@@ -118,14 +118,15 @@ if menu == "Overview":
     memudahkan analisis perbandingan.
     """)
 
-elif menu == "Performa Model":
+    elif menu == "Performa Model":
     st.title("📊 Perbandingan Performa Model")
 
-    # ================= DATA METRIK MODEL =================
+    # ================= DATA METRIK MODEL (HASIL UJI) =================
     metrics = ["Accuracy", "Precision", "Recall", "F1-Score"]
 
-    xgboost_scores = [0.87, 0.86, 0.85, 0.85]
-    rf_scores = [0.84, 0.83, 0.82, 0.82]
+    xgboost_scores = [0.775, 0.741, 0.775, 0.753]
+    rf_scores = [0.755, 0.694, 0.755, 0.721]
+
 
     x = np.arange(len(metrics))
     width = 0.35
@@ -340,6 +341,7 @@ st.markdown(
     "<center>Dashboard Analisis Sentimen | Skripsi | 2026</center>",
     unsafe_allow_html=True
 )
+
 
 
 
